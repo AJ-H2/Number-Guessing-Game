@@ -1,4 +1,7 @@
 import random
+import csv 
+import os
+from datetime import datetime
 
 difficulty_levels = {
 	'easy': 10,
@@ -61,6 +64,7 @@ def play_game(user='', attempts = 10):
 		guess = get_guess(difficulty['max_range'])
 		if guess == random_number:
 			print(f'You got it in {guesses} guesses! You had {attempts} attempts left.')
+			save_game(user, attempts, guesses, difficulty)
 			break
 		elif attempts <= 0:
 			print("Sorry, you're out of attempts.")
@@ -72,7 +76,6 @@ def play_game(user='', attempts = 10):
 			print(f"Too high! You have {attempts} attempts left.")
 			continue
 
-	#save_score()
 	play_again(user, 10)
 
 def play_again(user='', attempts=10):
@@ -80,5 +83,34 @@ def play_again(user='', attempts=10):
 		play_game(user, attempts)
 	else: 
 		print("See you next time!")
+
+def save_game(user, attempts, guesses, difficulty):
+	date_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+	filename = 'results.csv'
+	file_exists = os.path.exists(filename)
+
+	with open('results.csv', 'a', newline="") as file:
+		writer = csv.writer(file)
+
+		if not file_exists:
+			writer.writerow([
+				"username",
+				"attempts_left",
+				"guesses",
+				"difficulty",
+				"datetime"
+			])
+
+		writer.writerow([
+			user,
+			attempts,
+			guesses,
+			difficulty['difficulty'],
+			datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		])
+
+	print("You're score has been recorded.")
+
 
 play_game('', 10)
