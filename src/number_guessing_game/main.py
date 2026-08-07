@@ -1,77 +1,84 @@
 import random
-import csv
 
-# Variable Definitions
-difficulties = {
-	"easy": 10,
-	"medium": 100,
-	"hard": 1000
+difficulty_levels = {
+	'easy': 10,
+	'medium': 100,
+	'hard': 1000
 }
 
-# Function Definitions
-def validate_input(input):
-	if type(input) == int:
-		return input 
-	else:
-		print('Please enter a valid number.')
-
-def get_difficulty(user):
+def get_username():
 	while True:
 		try:
-			user_selected_difficulty = input(f"Would you like to play on hard, medium, or easy difficulty {user}? ").lower()
-		except ValueError:
-			print("Please choose a valid difficulty.")
-			continue
+			username = input("Please enter your username: ").strip()
+			if len(username) < 2:
+				print("Your username must be at least 2 characters.")
+				continue
+			if len(username) > 20:
+				print("Your username cannot be greater than 20 characters.")
+				continue
+			if not username[0].isalpha():
+				print("Your username must start with a letter.")
+				continue
+			if not username.replace("_", "").isalnum():
+				print("Your username can only contain letters, numbers, and underscores.")
+				continue
+			return username
+		except:
+			print("There was an issue creating your username.")
 
-		if user_selected_difficulty not in difficulty:
-			print("Please choose a valid difficulty mode.")
-			continue
-		else:
-			return difficulties[user_selected_difficulty]
+def get_difficulty(username="friend"):
+	while True:
+		try:
+			difficulty = input(f"Would you like to play on easy, medium, or hard difficulty {username}? ").lower()
+			if difficulty not in difficulty_levels:
+				print(f"Please select a valid difficulty.")
+				continue
+			return {
+				'difficulty': difficulty,
+				'max_range': difficulty_levels[difficulty]
+			}
+		except:
+			print("Please select a valid difficulty.")
 
-def get_user():
-	user = str(input("Please enter your username: "))
-	return user
+def get_guess(max_range = difficulty_levels['medium']):
+	while True:
+		try:
+			guess = int(input(f"Guess a number between 1 and {max_range}: "))
+			return guess
+		except:
+			print("Please select a valid number.")
 
+def play_game(user='', attempts = 10):
+	user = get_username() if not user.strip() else user
+	difficulty = get_difficulty(user)
 
+	random_number = random.randint(1, difficulty['max_range'])
+	guesses = 0
 
-
-
-
-
-
-
-# Program Start
-user = get_user()
-difficulty = get_difficulty(user)
-secret_number = random.randint(1, difficulty)
-attempts = 10
-guesses = 0
-
-while attempts: 
-	try:
-		guess = int(input(f"Guess a number between 1 and {difficulty}: "))
-	except ValueError:
-		print("Please enter a valid number.")
-		continue
-
-	attempts -= 1
-	guesses += 1
-
-	if guess == secret_number:
-		print(f'You got it in {guesses} guesses! You had {attempts} attempts left!')
-		break
-	elif guess < secret_number:
-		print(f'Too low! You have {attempts} attempts left.')
-	elif guess > secret_number:
-		print(f'Too high! You have {attempts} attempts left.')
-
-	if attempts == 0 and guess != secret_number:
-		print("You've exhausted your attempts!")
-		play_again = input("Would you like to play again? Yes or No").lower()
-		if play_again == 'yes':
-			continue
-		else:
+	while True:
+		attempts -= 1
+		guesses += 1
+		guess = get_guess(difficulty['max_range'])
+		if guess == random_number:
+			print(f'You got it in {guesses} guesses! You had {attempts} attempts left.')
 			break
+		elif attempts <= 0:
+			print("Sorry, you're out of attempts.")
+			break
+		elif guess < random_number:
+			print(f"Too low! You have {attempts} attempts left.")
+			continue
+		elif guess > random_number:
+			print(f"Too high! You have {attempts} attempts left.")
+			continue
 
+	#save_score()
+	play_again(user, 10)
 
+def play_again(user='', attempts=10):
+	if input("Would you like to play again (yes/no)?").lower() == 'Yes'.lower(): 
+		play_game(user, attempts)
+	else: 
+		print("See you next time!")
+
+play_game('', 10)
